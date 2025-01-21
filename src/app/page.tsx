@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { sendMessage } from '@/services/ai';
 import Layout from '@/components/Layout';
 import MessageBubble from '@/components/MessageBubble';
@@ -13,6 +13,8 @@ import ThemeToggle from '@/components/ThemeToggle';
 import LanguageSelect from '@/components/LanguageSelect';
 import { saveMessages, loadMessages } from '@/utils/storage';
 import { VoiceState, VoiceError } from '@/types/voice';
+import SpeechControl from '@/components/SpeechControl';
+import { speechService } from '@/services/speech';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,6 +24,8 @@ export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [language, setLanguage] = useState('zh-CN');
   const [voiceState, setVoiceState] = useState<VoiceState>(VoiceState.IDLE);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(false);
 
   const scrollToBottom = debounce(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,6 +48,24 @@ export default function Home() {
     }
   }, [messages]);
 
+  const handleAIResponse = useCallback((response: string) => {
+    setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    
+    if (autoSpeak && !isSpeaking) {
+      setIsSpeaking(true);
+      speechService.speak(response, {
+        rate: 1.1,
+        pitch: 1.2,
+        onStart: () => setIsSpeaking(true),
+        onEnd: () => setIsSpeaking(false),
+        onError: (error) => {
+          console.error('Speech synthesis error:', error);
+          setIsSpeaking(false);
+        }
+      });
+    }
+  }, [autoSpeak, isSpeaking]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -55,7 +77,7 @@ export default function Home() {
 
     try {
       const response = await sendMessage([...messages, newMessage]);
-      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+      handleAIResponse(response);
     } catch (error) {
       console.error('Error:', error);
       alert('发送消息失败了喵~ 请稍后再试');
@@ -66,6 +88,7 @@ export default function Home() {
 
   const handleClearChat = () => {
     if (window.confirm('确定要清空对话吗？')) {
+      speechService.stop();
       setMessages([]);
     }
   };
@@ -100,6 +123,7 @@ export default function Home() {
           <div className="flex gap-2">
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <LanguageSelect language={language} setLanguage={setLanguage} />
+            <SpeechControl autoSpeak={autoSpeak} />
           </div>
           <button
             onClick={handleClearChat}
@@ -124,6 +148,23 @@ export default function Home() {
           </div>
 
           <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={autoSpeak}
+                  onChange={(e) => setAutoSpeak(e.target.checked)}
+                  className="rounded text-pink-500 focus:ring-pink-500"
+                />
+                自动语音回复
+              </label>
+              {isSpeaking && (
+                <div className="text-sm text-pink-500 animate-pulse">
+                  正在说话...
+                </div>
+              )}
+            </div>
+            
             <ImageUpload 
               onImageAnalysis={handleImageAnalysis}
               disabled={isLoading}
