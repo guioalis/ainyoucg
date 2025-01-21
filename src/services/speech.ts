@@ -1,3 +1,5 @@
+import { VoiceCharacter } from '@/types/voice';
+
 export class SpeechService {
   private synthesis: SpeechSynthesis | null = null;
   private voice: SpeechSynthesisVoice | null = null;
@@ -37,16 +39,13 @@ export class SpeechService {
   }
 
   speak(text: string, options: {
-    rate?: number;
-    pitch?: number;
-    volume?: number;
+    character?: VoiceCharacter;
     onStart?: () => void;
     onEnd?: () => void;
     onError?: (error: any) => void;
   } = {}) {
     if (!this.synthesis || !text) return;
 
-    // 如果正在说话，先停止
     if (this.speaking) {
       this.stop();
     }
@@ -57,10 +56,15 @@ export class SpeechService {
       utterance.voice = this.voice;
     }
 
-    // 设置语音参数
-    utterance.rate = options.rate || 1;
-    utterance.pitch = options.pitch || 1;
-    utterance.volume = options.volume || 1;
+    // 使用角色设置
+    if (options.character) {
+      utterance.pitch = options.character.pitch;
+      utterance.rate = options.character.rate;
+      utterance.lang = options.character.lang;
+    } else {
+      utterance.pitch = 1;
+      utterance.rate = 1;
+    }
 
     // 添加事件监听
     utterance.onstart = () => {
