@@ -1,7 +1,5 @@
 # AI 猫娘助手
 
-[![Vercel Production Deployment](https://github.com/[YOUR_USERNAME]/ai-catgirl-chat/actions/workflows/vercel-deploy.yml/badge.svg)](https://github.com/[YOUR_USERNAME]/ai-catgirl-chat/actions/workflows/vercel-deploy.yml)
-
 一个基于 Next.js 和 Gemini API 的 AI 聊天应用。
 
 ## 一键部署
