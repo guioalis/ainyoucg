@@ -1,4 +1,4 @@
-# AI 猫娘助手
+# AI 喵哥女友
 
 [![Vercel Production Deployment](https://github.com/[YOUR_USERNAME]/ai-catgirl-chat/actions/workflows/vercel-deploy.yml/badge.svg)](https://github.com/[YOUR_USERNAME]/ai-catgirl-chat/actions/workflows/vercel-deploy.yml)
 
