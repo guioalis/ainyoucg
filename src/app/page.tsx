@@ -12,6 +12,7 @@ import VoiceInput from '@/components/VoiceInput';
 import ThemeToggle from '@/components/ThemeToggle';
 import LanguageSelect from '@/components/LanguageSelect';
 import { saveMessages, loadMessages } from '@/utils/storage';
+import { VoiceState, VoiceError } from '@/types/voice';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -20,6 +21,7 @@ export default function Home() {
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [language, setLanguage] = useState('zh-CN');
+  const [voiceState, setVoiceState] = useState<VoiceState>(VoiceState.IDLE);
 
   const scrollToBottom = debounce(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -79,6 +81,18 @@ export default function Home() {
     setInput(transcript);
   };
 
+  const handleVoiceStateChange = (state: VoiceState) => {
+    setVoiceState(state);
+    if (state === VoiceState.LISTENING) {
+      // 可以添加一些视觉反馈
+    }
+  };
+
+  const handleVoiceError = (error: VoiceError) => {
+    console.error('Voice error:', error);
+    // 可以添加错误提示
+  };
+
   return (
     <Layout>
       <div className="max-w-2xl mx-auto">
@@ -123,7 +137,10 @@ export default function Home() {
               />
               <VoiceInput
                 onTranscript={handleVoiceInput}
+                onStateChange={handleVoiceStateChange}
+                onError={handleVoiceError}
                 disabled={isLoading}
+                language={language}
               />
             </div>
           </div>
