@@ -15,6 +15,8 @@ import { saveMessages, loadMessages } from '@/utils/storage';
 import { VoiceState, VoiceError } from '@/types/voice';
 import SpeechControl from '@/components/SpeechControl';
 import { speechService } from '@/services/speech';
+import VoiceCharacterSelect from '@/components/VoiceCharacterSelect';
+import { VOICE_CHARACTERS, VoiceCharacter } from '@/types/voice';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,6 +28,8 @@ export default function Home() {
   const [voiceState, setVoiceState] = useState<VoiceState>(VoiceState.IDLE);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(false);
+  const [isContinuous, setIsContinuous] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState<VoiceCharacter>(VOICE_CHARACTERS[0]);
 
   const scrollToBottom = debounce(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,8 +58,7 @@ export default function Home() {
     if (autoSpeak && !isSpeaking && speechService) {
       setIsSpeaking(true);
       speechService.speak(response, {
-        rate: 1.1,
-        pitch: 1.2,
+        character: selectedCharacter,
         onStart: () => setIsSpeaking(true),
         onEnd: () => setIsSpeaking(false),
         onError: (error) => {
@@ -64,7 +67,7 @@ export default function Home() {
         }
       });
     }
-  }, [autoSpeak, isSpeaking]);
+  }, [autoSpeak, isSpeaking, selectedCharacter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +117,18 @@ export default function Home() {
   const handleVoiceError = (error: VoiceError) => {
     console.error('Voice error:', error);
     // 可以添加错误提示
+  };
+
+  const handleVoiceStart = () => {
+    // 开始录音时可以添加一些视觉反馈
+    console.log('开始录音');
+  };
+
+  const handleVoiceEnd = () => {
+    // 结束录音时自动发送消息
+    if (input.trim()) {
+      handleSubmit(new Event('submit') as any);
+    }
   };
 
   return (
@@ -226,8 +241,8 @@ export default function Home() {
           </div>
 
           <div className="mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <label className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-4 mb-2">
+              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <input
                   type="checkbox"
                   checked={autoSpeak}
@@ -235,6 +250,21 @@ export default function Home() {
                   className="rounded text-pink-500 focus:ring-pink-500"
                 />
                 自动语音回复
+              </label>
+              {autoSpeak && (
+                <VoiceCharacterSelect
+                  value={selectedCharacter.id}
+                  onChange={setSelectedCharacter}
+                />
+              )}
+              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={isContinuous}
+                  onChange={(e) => setIsContinuous(e.target.checked)}
+                  className="rounded text-pink-500 focus:ring-pink-500"
+                />
+                连续语音对话
               </label>
               {isSpeaking && (
                 <div className="text-sm text-pink-500 animate-pulse">
@@ -258,8 +288,11 @@ export default function Home() {
                 onTranscript={handleVoiceInput}
                 onStateChange={handleVoiceStateChange}
                 onError={handleVoiceError}
+                onStart={handleVoiceStart}
+                onEnd={handleVoiceEnd}
                 disabled={isLoading}
                 language={language}
+                continuous={isContinuous}
               />
             </div>
           </div>

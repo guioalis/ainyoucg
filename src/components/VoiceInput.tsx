@@ -8,13 +8,17 @@ export default function VoiceInput({
   onTranscript,
   onStateChange,
   onError,
+  onStart,
+  onEnd,
   disabled = false,
-  language = 'zh-CN'
+  language = 'zh-CN',
+  continuous = false
 }: VoiceRecognitionProps) {
   const [state, setState] = useState<VoiceState>(VoiceState.IDLE);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const [interimResult, setInterimResult] = useState<string>('');
 
   const updateState = (newState: VoiceState) => {
     setState(newState);
@@ -40,11 +44,12 @@ export default function VoiceInput({
       const recognition = new SpeechRecognition();
 
       recognition.lang = language;
-      recognition.continuous = true;
+      recognition.continuous = continuous;
       recognition.interimResults = true;
 
       recognition.onstart = () => {
         updateState(VoiceState.LISTENING);
+        onStart?.();
         // 添加超时处理
         timeoutRef.current = setTimeout(() => {
           if (state === VoiceState.LISTENING) {
@@ -54,14 +59,25 @@ export default function VoiceInput({
       };
 
       recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join('');
-        
-        if (event.results[0].isFinal) {
-          onTranscript(transcript);
-          stopRecording();
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
         }
+
+        if (finalTranscript) {
+          onTranscript(finalTranscript);
+          if (!continuous) {
+            stopRecording();
+          }
+        }
+        setInterimResult(interimTranscript);
       };
 
       recognition.onerror = (event) => {
@@ -72,49 +88,37 @@ export default function VoiceInput({
       };
 
       recognition.onend = () => {
-        if (state === VoiceState.LISTENING) {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        if (state !== VoiceState.ERROR) {
           updateState(VoiceState.IDLE);
         }
+        onEnd?.();
+        recognitionRef.current = null;
       };
 
       recognition.start();
       recognitionRef.current = recognition;
+      setErrorMsg('');
 
     } catch (error) {
       handleError({
         name: 'InitError',
-        message: error instanceof Error ? error.message : '语音初始化失败喵~'
+        message: '初始化语音识别失败喵~'
       });
     }
-  }, [disabled, language, onTranscript, state]);
+  }, [disabled, language, continuous, state, onStart, onEnd, onTranscript]);
 
-  const stopRecording = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
+  const stopRecording = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
-      recognitionRef.current = null;
     }
-
-    updateState(VoiceState.IDLE);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
+  };
 
   const getErrorMessage = (error: string): string => {
-    const errorMessages: Record<string, string> = {
-      'no-speech': '没有检测到声音喵~',
+    const errorMessages: { [key: string]: string } = {
+      'no-speech': '没有听到声音喵~',
       'audio-capture': '没有找到麦克风设备喵~',
       'not-allowed': '请允许使用麦克风喵~',
       'network': '网络连接出错了喵~',
@@ -147,6 +151,17 @@ export default function VoiceInput({
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
   return (
     <div className="relative">
       <button
@@ -166,6 +181,13 @@ export default function VoiceInput({
         <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 
                       bg-red-100 text-red-600 px-2 py-1 rounded text-sm whitespace-nowrap">
           {errorMsg}
+        </div>
+      )}
+      
+      {interimResult && state === VoiceState.LISTENING && (
+        <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 
+                      bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm whitespace-nowrap">
+          {interimResult}
         </div>
       )}
       
