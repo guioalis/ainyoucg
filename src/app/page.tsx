@@ -17,7 +17,6 @@ import SpeechControl from '@/components/SpeechControl';
 import { speechService } from '@/services/speech';
 import VoiceCharacterSelect from '@/components/VoiceCharacterSelect';
 import { VOICE_CHARACTERS, VoiceCharacter } from '@/types/voice';
-import SearchIndicator from '@/components/SearchIndicator';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -32,7 +31,6 @@ export default function Home() {
   const [isContinuous, setIsContinuous] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<VoiceCharacter>(VOICE_CHARACTERS[0]);
   const [isVoiceChatting, setIsVoiceChatting] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
 
   const scrollToBottom = debounce(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -80,7 +78,6 @@ export default function Home() {
     setMessages(prev => [...prev, newMessage]);
     setInput('');
     setIsLoading(true);
-    setIsSearching(true);
 
     try {
       const response = await sendMessage([...messages, newMessage]);
@@ -90,7 +87,6 @@ export default function Home() {
       alert('发送消息失败了喵~ 请稍后再试');
     } finally {
       setIsLoading(false);
-      setIsSearching(false);
     }
   };
 
@@ -240,14 +236,11 @@ export default function Home() {
             {messages.map((message, index) => (
               <MessageBubble key={index} message={message} />
             ))}
-            {(isLoading || isSearching) && (
-              <div className="flex flex-col items-center gap-2">
-                {isSearching && <SearchIndicator isSearching={isSearching} />}
-                {isLoading && (
-                  <div className="animate-bounce text-pink-500">
-                    思考中喵...
-                  </div>
-                )}
+            {isLoading && (
+              <div className="flex justify-center">
+                <div className="animate-bounce text-pink-500">
+                  思考中喵...
+                </div>
               </div>
             )}
             <div ref={messagesEndRef} />
