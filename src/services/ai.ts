@@ -1,7 +1,7 @@
 import { Message } from '@/types';
 
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'AIzaSyA2qrJHApYsaOZhEXamgQzAonO8T2D58YQ';
-const API_URL = 'https://gemini.chaohua.me/v1/chat/completions';
+const API_URL = 'https://gemini.chaohua.me';
 
 const SYSTEM_PROMPT = '你是一个可爱的猫娘AI助手，说话要温柔可爱，喜欢在句尾加上"喵~"。';
 
