@@ -119,29 +119,80 @@ export default function Home() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto">
-        <section className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-pink-600 mb-4">
-            喵哥AI女友 - 你的智能聊天伴侣
-          </h1>
-          <p className="text-gray-600 mb-6">
-            基于最新的 Gemini AI 技术，为你提供温暖、有趣、智能的对话体验
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="bg-pink-50 p-3 rounded-lg">
-              <h2 className="font-semibold text-pink-600 mb-1">语音对话</h2>
-              <p className="text-gray-600">支持语音输入和朗读回复</p>
+        <section className="mb-8">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 
+              bg-clip-text text-transparent mb-3">
+              喵哥AI女友
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              你的智能聊天伴侣，让对话充满温度
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/10 
+              dark:to-purple-900/10 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start space-x-3">
+                <div className="bg-pink-100 dark:bg-pink-900/20 rounded-lg p-2">
+                  <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">智能语音交互</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">支持语音输入和朗读，让交流更自然</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-pink-50 p-3 rounded-lg">
-              <h2 className="font-semibold text-pink-600 mb-1">图片识别</h2>
-              <p className="text-gray-600">可以识别和描述上传的图片</p>
+
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/10 
+              dark:to-purple-900/10 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start space-x-3">
+                <div className="bg-pink-100 dark:bg-pink-900/20 rounded-lg p-2">
+                  <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">图像理解</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">可以识别和描述图片内容</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-pink-50 p-3 rounded-lg">
-              <h2 className="font-semibold text-pink-600 mb-1">多语言支持</h2>
-              <p className="text-gray-600">支持中英日等多种语言</p>
+
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/10 
+              dark:to-purple-900/10 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start space-x-3">
+                <div className="bg-pink-100 dark:bg-pink-900/20 rounded-lg p-2">
+                  <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">多语言支持</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">支持中英日等多种语言交流</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-pink-50 p-3 rounded-lg">
-              <h2 className="font-semibold text-pink-600 mb-1">深度交互</h2>
-              <p className="text-gray-600">记忆对话上下文</p>
+
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/10 
+              dark:to-purple-900/10 rounded-xl p-4 shadow-sm">
+              <div className="flex items-start space-x-3">
+                <div className="bg-pink-100 dark:bg-pink-900/20 rounded-lg p-2">
+                  <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">上下文理解</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">记忆对话内容，理解上下文</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -161,7 +212,7 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="bg-gray-50 rounded-lg shadow-lg p-4 min-h-[500px] flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 min-h-[500px] flex flex-col">
           <div className="flex-1 overflow-y-auto">
             {messages.map((message, index) => (
               <MessageBubble key={index} message={message} />
@@ -229,13 +280,13 @@ export default function Home() {
                 "priceCurrency": "CNY"
               },
               "description": "基于 Gemini AI 的智能聊天应用，提供语音对话、图片识别、多语言支持等功能。",
-              "features": [
-                "语音对话",
-                "图片识别",
+              "featureList": [
+                "智能语音交互",
+                "图像理解能力",
                 "多语言支持",
-                "深度交互",
+                "上下文记忆",
                 "实时响应",
-                "上下文记忆"
+                "深度学习"
               ]
             })
           }}
