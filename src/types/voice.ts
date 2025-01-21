@@ -19,6 +19,8 @@ export interface VoiceRecognitionProps {
   disabled?: boolean;
   language?: string;
   continuous?: boolean;
+  autoSubmit?: boolean;
+  silenceTimeout?: number;
 }
 
 export interface VoiceCharacter {

@@ -17,6 +17,7 @@ import SpeechControl from '@/components/SpeechControl';
 import { speechService } from '@/services/speech';
 import VoiceCharacterSelect from '@/components/VoiceCharacterSelect';
 import { VOICE_CHARACTERS, VoiceCharacter } from '@/types/voice';
+import SearchIndicator from '@/components/SearchIndicator';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -30,6 +31,8 @@ export default function Home() {
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [isContinuous, setIsContinuous] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<VoiceCharacter>(VOICE_CHARACTERS[0]);
+  const [isVoiceChatting, setIsVoiceChatting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const scrollToBottom = debounce(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,6 +80,7 @@ export default function Home() {
     setMessages(prev => [...prev, newMessage]);
     setInput('');
     setIsLoading(true);
+    setIsSearching(true);
 
     try {
       const response = await sendMessage([...messages, newMessage]);
@@ -86,6 +90,7 @@ export default function Home() {
       alert('发送消息失败了喵~ 请稍后再试');
     } finally {
       setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -105,6 +110,9 @@ export default function Home() {
 
   const handleVoiceInput = (transcript: string) => {
     setInput(transcript);
+    if (isContinuous) {
+      console.log('实时转写:', transcript);
+    }
   };
 
   const handleVoiceStateChange = (state: VoiceState) => {
@@ -120,15 +128,15 @@ export default function Home() {
   };
 
   const handleVoiceStart = () => {
-    // 开始录音时可以添加一些视觉反馈
-    console.log('开始录音');
+    setIsVoiceChatting(true);
+    setInput('');
   };
 
   const handleVoiceEnd = () => {
-    // 结束录音时自动发送消息
     if (input.trim()) {
       handleSubmit(new Event('submit') as any);
     }
+    setIsVoiceChatting(false);
   };
 
   return (
@@ -232,9 +240,14 @@ export default function Home() {
             {messages.map((message, index) => (
               <MessageBubble key={index} message={message} />
             ))}
-            {isLoading && (
-              <div className="flex justify-center">
-                <div className="animate-bounce text-pink-500">思考中喵...</div>
+            {(isLoading || isSearching) && (
+              <div className="flex flex-col items-center gap-2">
+                {isSearching && <SearchIndicator isSearching={isSearching} />}
+                {isLoading && (
+                  <div className="animate-bounce text-pink-500">
+                    思考中喵...
+                  </div>
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -271,6 +284,11 @@ export default function Home() {
                   正在说话...
                 </div>
               )}
+              {isVoiceChatting && (
+                <div className="text-sm text-pink-500 animate-pulse">
+                  正在聆听...
+                </div>
+              )}
             </div>
             
             <ImageUpload 
@@ -293,6 +311,8 @@ export default function Home() {
                 disabled={isLoading}
                 language={language}
                 continuous={isContinuous}
+                autoSubmit={true}
+                silenceTimeout={1500}
               />
             </div>
           </div>

@@ -12,13 +12,17 @@ export default function VoiceInput({
   onEnd,
   disabled = false,
   language = 'zh-CN',
-  continuous = false
+  continuous = false,
+  autoSubmit = false,
+  silenceTimeout = 1000 // 停顿超过1秒自动提交
 }: VoiceRecognitionProps) {
   const [state, setState] = useState<VoiceState>(VoiceState.IDLE);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const silenceTimeoutRef = useRef<NodeJS.Timeout>();
   const [interimResult, setInterimResult] = useState<string>('');
+  const lastResultRef = useRef<string>('');
 
   const updateState = (newState: VoiceState) => {
     setState(newState);
@@ -62,6 +66,11 @@ export default function VoiceInput({
         let finalTranscript = '';
         let interimTranscript = '';
 
+        // 清除之前的静音超时
+        if (silenceTimeoutRef.current) {
+          clearTimeout(silenceTimeoutRef.current);
+        }
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
@@ -72,12 +81,32 @@ export default function VoiceInput({
         }
 
         if (finalTranscript) {
+          lastResultRef.current = finalTranscript;
           onTranscript(finalTranscript);
+          
+          if (autoSubmit) {
+            // 设置静音检测，如果停顿超过指定时间，自动提交
+            silenceTimeoutRef.current = setTimeout(() => {
+              if (continuous) {
+                onEnd?.();
+              } else {
+                stopRecording();
+              }
+            }, silenceTimeout);
+          }
+
           if (!continuous) {
             stopRecording();
           }
         }
         setInterimResult(interimTranscript);
+      };
+
+      recognition.onaudioend = () => {
+        // 当音频输入结束时，检查是否需要自动提交
+        if (autoSubmit && lastResultRef.current) {
+          onEnd?.();
+        }
       };
 
       recognition.onerror = (event) => {
@@ -101,6 +130,7 @@ export default function VoiceInput({
       recognition.start();
       recognitionRef.current = recognition;
       setErrorMsg('');
+      lastResultRef.current = '';
 
     } catch (error) {
       handleError({
@@ -108,7 +138,7 @@ export default function VoiceInput({
         message: '初始化语音识别失败喵~'
       });
     }
-  }, [disabled, language, continuous, state, onStart, onEnd, onTranscript]);
+  }, [disabled, language, continuous, autoSubmit, silenceTimeout, state, onStart, onEnd, onTranscript]);
 
   const stopRecording = () => {
     if (recognitionRef.current) {
@@ -155,6 +185,9 @@ export default function VoiceInput({
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current);
       }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
