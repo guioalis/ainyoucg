@@ -1,14 +1,19 @@
 export class SpeechService {
-  private synthesis: SpeechSynthesis;
+  private synthesis: SpeechSynthesis | null = null;
   private voice: SpeechSynthesisVoice | null = null;
   private speaking: boolean = false;
 
   constructor() {
-    this.synthesis = window.speechSynthesis;
-    this.initVoice();
+    // 只在客户端初始化
+    if (typeof window !== 'undefined') {
+      this.synthesis = window.speechSynthesis;
+      this.initVoice();
+    }
   }
 
   private initVoice() {
+    if (!this.synthesis) return;
+    
     // 等待voices加载
     if (this.synthesis.getVoices().length === 0) {
       this.synthesis.addEventListener('voiceschanged', () => {
@@ -20,6 +25,8 @@ export class SpeechService {
   }
 
   private selectVoice() {
+    if (!this.synthesis) return;
+    
     const voices = this.synthesis.getVoices();
     // 优先选择中文女声
     this.voice = voices.find(voice => 
@@ -86,5 +93,5 @@ export class SpeechService {
   }
 }
 
-// 创建单例
-export const speechService = new SpeechService(); 
+// 创建单例，但要确保在客户端
+export const speechService = typeof window !== 'undefined' ? new SpeechService() : null; 

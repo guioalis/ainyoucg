@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import { speechService } from '@/services/speech';
 
@@ -10,13 +10,20 @@ interface SpeechControlProps {
 
 export default function SpeechControl({ autoSpeak = false }: SpeechControlProps) {
   const [isMuted, setIsMuted] = useState(!autoSpeak);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleMute = useCallback(() => {
-    if (speechService.isSpeaking()) {
+    if (speechService?.isSpeaking()) {
       speechService.stop();
     }
     setIsMuted(!isMuted);
   }, [isMuted]);
+
+  if (!mounted) return null;
 
   return (
     <button

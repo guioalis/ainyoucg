@@ -51,7 +51,7 @@ export default function Home() {
   const handleAIResponse = useCallback((response: string) => {
     setMessages(prev => [...prev, { role: 'assistant', content: response }]);
     
-    if (autoSpeak && !isSpeaking) {
+    if (autoSpeak && !isSpeaking && speechService) {
       setIsSpeaking(true);
       speechService.speak(response, {
         rate: 1.1,
@@ -88,7 +88,7 @@ export default function Home() {
 
   const handleClearChat = () => {
     if (window.confirm('确定要清空对话吗？')) {
-      speechService.stop();
+      speechService?.stop();
       setMessages([]);
     }
   };
