@@ -19,7 +19,15 @@ function needsSearch(message: string): boolean {
 
 export async function sendMessage(messages: Message[]): Promise<string> {
   try {
-    const userMessage = messages[messages.length - 1].content;
+    const lastMessage = messages[messages.length - 1];
+    const userMessage = typeof lastMessage.content === 'string' 
+      ? lastMessage.content 
+      : Array.isArray(lastMessage.content)
+        ? lastMessage.content.map(item => 
+            typeof item === 'string' ? item : item.text || ''
+          ).join(' ')
+        : '';
+
     let searchResults: SearchResult[] = [];
     let contextWithSearch = '';
 
