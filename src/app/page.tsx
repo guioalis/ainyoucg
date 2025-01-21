@@ -119,6 +119,33 @@ export default function Home() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto">
+        <section className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-pink-600 mb-4">
+            喵哥AI女友 - 你的智能聊天伴侣
+          </h1>
+          <p className="text-gray-600 mb-6">
+            基于最新的 Gemini AI 技术，为你提供温暖、有趣、智能的对话体验
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="bg-pink-50 p-3 rounded-lg">
+              <h2 className="font-semibold text-pink-600 mb-1">语音对话</h2>
+              <p className="text-gray-600">支持语音输入和朗读回复</p>
+            </div>
+            <div className="bg-pink-50 p-3 rounded-lg">
+              <h2 className="font-semibold text-pink-600 mb-1">图片识别</h2>
+              <p className="text-gray-600">可以识别和描述上传的图片</p>
+            </div>
+            <div className="bg-pink-50 p-3 rounded-lg">
+              <h2 className="font-semibold text-pink-600 mb-1">多语言支持</h2>
+              <p className="text-gray-600">支持中英日等多种语言</p>
+            </div>
+            <div className="bg-pink-50 p-3 rounded-lg">
+              <h2 className="font-semibold text-pink-600 mb-1">深度交互</h2>
+              <p className="text-gray-600">记忆对话上下文</p>
+            </div>
+          </div>
+        </section>
+
         <div className="flex justify-between items-center mb-4">
           <div className="flex gap-2">
             <ThemeToggle theme={theme} setTheme={setTheme} />
@@ -186,6 +213,33 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "喵哥AI女友",
+              "applicationCategory": "ChatApplication",
+              "operatingSystem": "Web",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "CNY"
+              },
+              "description": "基于 Gemini AI 的智能聊天应用，提供语音对话、图片识别、多语言支持等功能。",
+              "features": [
+                "语音对话",
+                "图片识别",
+                "多语言支持",
+                "深度交互",
+                "实时响应",
+                "上下文记忆"
+              ]
+            })
+          }}
+        />
       </div>
     </Layout>
   );
