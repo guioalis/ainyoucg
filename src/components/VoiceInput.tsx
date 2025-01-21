@@ -8,21 +8,13 @@ export default function VoiceInput({
   onTranscript,
   onStateChange,
   onError,
-  onStart,
-  onEnd,
   disabled = false,
-  language = 'zh-CN',
-  continuous = false,
-  autoSubmit = false,
-  silenceTimeout = 1000 // 停顿超过1秒自动提交
+  language = 'zh-CN'
 }: VoiceRecognitionProps) {
   const [state, setState] = useState<VoiceState>(VoiceState.IDLE);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const silenceTimeoutRef = useRef<NodeJS.Timeout>();
-  const [interimResult, setInterimResult] = useState<string>('');
-  const lastResultRef = useRef<string>('');
 
   const updateState = (newState: VoiceState) => {
     setState(newState);
@@ -48,12 +40,11 @@ export default function VoiceInput({
       const recognition = new SpeechRecognition();
 
       recognition.lang = language;
-      recognition.continuous = continuous;
+      recognition.continuous = true;
       recognition.interimResults = true;
 
       recognition.onstart = () => {
         updateState(VoiceState.LISTENING);
-        onStart?.();
         // 添加超时处理
         timeoutRef.current = setTimeout(() => {
           if (state === VoiceState.LISTENING) {
@@ -63,49 +54,13 @@ export default function VoiceInput({
       };
 
       recognition.onresult = (event) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        // 清除之前的静音超时
-        if (silenceTimeoutRef.current) {
-          clearTimeout(silenceTimeoutRef.current);
-        }
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        if (finalTranscript) {
-          lastResultRef.current = finalTranscript;
-          onTranscript(finalTranscript);
-          
-          if (autoSubmit) {
-            // 设置静音检测，如果停顿超过指定时间，自动提交
-            silenceTimeoutRef.current = setTimeout(() => {
-              if (continuous) {
-                onEnd?.();
-              } else {
-                stopRecording();
-              }
-            }, silenceTimeout);
-          }
-
-          if (!continuous) {
-            stopRecording();
-          }
-        }
-        setInterimResult(interimTranscript);
-      };
-
-      recognition.onaudioend = () => {
-        // 当音频输入结束时，检查是否需要自动提交
-        if (autoSubmit && lastResultRef.current) {
-          onEnd?.();
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        
+        if (event.results[0].isFinal) {
+          onTranscript(transcript);
+          stopRecording();
         }
       };
 
@@ -117,38 +72,49 @@ export default function VoiceInput({
       };
 
       recognition.onend = () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        if (state !== VoiceState.ERROR) {
+        if (state === VoiceState.LISTENING) {
           updateState(VoiceState.IDLE);
         }
-        onEnd?.();
-        recognitionRef.current = null;
       };
 
       recognition.start();
       recognitionRef.current = recognition;
-      setErrorMsg('');
-      lastResultRef.current = '';
 
     } catch (error) {
       handleError({
         name: 'InitError',
-        message: '初始化语音识别失败喵~'
+        message: error instanceof Error ? error.message : '语音初始化失败喵~'
       });
     }
-  }, [disabled, language, continuous, autoSubmit, silenceTimeout, state, onStart, onEnd, onTranscript]);
+  }, [disabled, language, onTranscript, state]);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     if (recognitionRef.current) {
       recognitionRef.current.stop();
+      recognitionRef.current = null;
     }
-  };
+
+    updateState(VoiceState.IDLE);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   const getErrorMessage = (error: string): string => {
-    const errorMessages: { [key: string]: string } = {
-      'no-speech': '没有听到声音喵~',
+    const errorMessages: Record<string, string> = {
+      'no-speech': '没有检测到声音喵~',
       'audio-capture': '没有找到麦克风设备喵~',
       'not-allowed': '请允许使用麦克风喵~',
       'network': '网络连接出错了喵~',
@@ -181,20 +147,6 @@ export default function VoiceInput({
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (silenceTimeoutRef.current) {
-        clearTimeout(silenceTimeoutRef.current);
-      }
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
-
   return (
     <div className="relative">
       <button
@@ -214,13 +166,6 @@ export default function VoiceInput({
         <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 
                       bg-red-100 text-red-600 px-2 py-1 rounded text-sm whitespace-nowrap">
           {errorMsg}
-        </div>
-      )}
-      
-      {interimResult && state === VoiceState.LISTENING && (
-        <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 
-                      bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm whitespace-nowrap">
-          {interimResult}
         </div>
       )}
       
