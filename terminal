@@ -1,0 +1,3 @@
+npx create-next-app@latest ai-catgirl-chat --typescript --tailwind --app
+cd ai-catgirl-chat 
+npm install @types/react @types/node next react react-dom react-icons 
